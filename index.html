@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+    <content id="app" class="center">
+        <h1>Students</h1>
+
+        <div class="content_group">
+        </div>
+    </content>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-left: calc(50% - 1200px / 2);
+            padding-right: calc(50% - 1200px / 2);
+            margin: 5px;
+            background-color: whitesmoke
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+
+            background-color: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 4px 4px 8px 0px rgba(34, 60, 80, 0.2);
+            text-align: center;
+            width: 350px;
+
+        }
+
+
+        p {
+            font-size: 16px;
+            /* padding-bottom: 10px; */
+        }
+
+        h2 {
+            /* padding-bottom: 10px; */
+            color: rgb(24, 112, 149);
+        }
+
+        button {
+            padding: 5px;
+            border-radius: 8px;
+        }
+
+        button:hover {
+            cursor: pointer;
+
+        }
+
+        h1 {
+            color: #1D1D1D;
+            text-align: center;
+            font-size: 64px;
+            font-style: normal;
+            font-weight: 800;
+            line-height: normal;
+            letter-spacing: 0.64px;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+
+
+        .content_group {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+
+        }
+    </style>
+
+    <script>
+        const state = {
+            students: [],
+        };
+
+        const contentEl = document.querySelector('.content_group');
+
+        function getStudents() {
+            axios.get('/api/students')
+                .then((response) => {
+                    state.students = response.data;
+                    renderStudents();
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+        };
+
+        function ageUpStudent(id) {
+            const studentIndex = state.students.findIndex(x => x._id === id);
+            axios.patch(`/api/student/${id}`, { age: state.students[studentIndex].age + 1 })
+                .then((response) => {
+                    state.students[studentIndex] = response.data;
+                    renderStudents();
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+
+
+        };
+
+        function deleteStudent(id) {
+            axios.delete(`/api/student/${id}`)
+                .then((response) => {
+                    getStudents();
+                    renderStudents();
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+        };
+
+        function renderStudents() {
+            contentEl.innerHTML = '';
+            state.students.forEach(x => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.id = x._id;
+
+                const nameEl = document.createElement('h2');
+                nameEl.textContent = x.firstName + ' ' + x.lastName;
+                cardEl.append(nameEl);
+
+                const emailEl = document.createElement('p');
+                emailEl.textContent = `Email: ${x.email}`;
+                cardEl.append(emailEl);
+
+                const ageEl = document.createElement('p');
+                ageEl.textContent = `Age: ${x.age}`;
+                cardEl.append(ageEl);
+
+
+                const addAgeButtonEl = document.createElement('button');
+                addAgeButtonEl.textContent = `Age up`;
+                addAgeButtonEl.onclick = () => ageUpStudent(x._id);
+                cardEl.append(addAgeButtonEl);
+
+                const deleteButtonEl = document.createElement('button');
+                deleteButtonEl.textContent = `Delete`;
+                deleteButtonEl.onclick = () => deleteStudent(x._id);
+                cardEl.append(deleteButtonEl);
+
+                contentEl.append(cardEl);
+
+
+            });
+        };
+
+
+        window.addEventListener('load', function () {
+            getStudents();
+        });
+
+
+    </script>
+</body>
+
+</html>
